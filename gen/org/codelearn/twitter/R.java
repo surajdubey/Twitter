@@ -25,7 +25,7 @@ public final class R {
         public static final int user_profile=0x7f020001;
     }
     public static final class id {
-        public static final int action_settings=0x7f08000f;
+        public static final int action_settings=0x7f080010;
         public static final int btn_login=0x7f080007;
         public static final int fld_pwd=0x7f080006;
         public static final int fld_username=0x7f080003;
@@ -33,6 +33,7 @@ public final class R {
         public static final int imageView1=0x7f08000c;
         public static final int pwd=0x7f080005;
         public static final int pwd_block=0x7f080004;
+        public static final int refresh=0x7f08000f;
         public static final int textView2=0x7f08000d;
         public static final int textView3=0x7f08000e;
         public static final int tweetBody=0x7f08000a;
@@ -49,9 +50,10 @@ public final class R {
         public static final int row_tweet=0x7f030003;
     }
     public static final class menu {
-        public static final int main=0x7f070000;
-        public static final int tweet_detail=0x7f070001;
-        public static final int tweet_list=0x7f070002;
+        public static final int activity_main_actions=0x7f070000;
+        public static final int main=0x7f070001;
+        public static final int tweet_detail=0x7f070002;
+        public static final int tweet_list=0x7f070003;
     }
     public static final class string {
         public static final int action_settings=0x7f050001;
@@ -63,6 +65,7 @@ public final class R {
         public static final int lbl_pwd=0x7f050005;
         public static final int lbl_username=0x7f050003;
         public static final int no_tweet_found=0x7f050009;
+        public static final int refresh=0x7f05000b;
         public static final int title_activity_tweet_detail=0x7f05000a;
         public static final int title_activity_tweet_list=0x7f050008;
     }

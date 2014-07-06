@@ -18,9 +18,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 
 public class TweetListActivity extends ListActivity{
@@ -28,7 +30,7 @@ public class TweetListActivity extends ListActivity{
 
 
     private ArrayAdapter tweetItemArrayAdapter;
-   // private List<Tweet> tweets = new ArrayList<Tweet>();
+    public List<Tweet> tweets = new ArrayList<Tweet>();
  
     public static String tag="codelearn";
 	@Override
@@ -70,7 +72,7 @@ public class TweetListActivity extends ListActivity{
 	{
 		String url="http://app-dev-challenge-endpoint.herokuapp.com/tweets";
 		JSONArray jarray;
-		List<Tweet> tweets = new ArrayList<Tweet>();
+		//List<Tweet> tweets = new ArrayList<Tweet>();
 		@Override
 		protected List<Tweet> doInBackground(Void... params) {
 			
@@ -115,6 +117,23 @@ public class TweetListActivity extends ListActivity{
 		protected void onPostExecute(List<Tweet> tweets) {
 
 			renderTweet(tweets);
+		}
+		
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId())
+		{
+		case R.id.refresh:
+			
+			//Toast.makeText(getApplicationContext(), "Refresh", Toast.LENGTH_SHORT).show();
+			new TweetSync().execute();
+			Log.d(tag, "Refresh Item!!");
+			return true;
+		
+		default:
+			return super.onOptionsItemSelected(item);
 		}
 		
 	}

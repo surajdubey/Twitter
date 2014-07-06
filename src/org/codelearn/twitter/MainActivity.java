@@ -1,19 +1,9 @@
 package org.codelearn.twitter;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -29,20 +19,14 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		SharedPreferences prefs = getSharedPreferences("codelearn_twitter", MODE_PRIVATE);
 		_loginBtn = ( Button ) findViewById(R.id.btn_login);
-		/*
-		if(prefs.getString("token", "")!="")
-		{
-			Intent intent = new Intent(MainActivity.this,TweetListActivity.class);
-			startActivity(intent);
-			finish();
-		}
-		*/
+		
 		String s=prefs.getString("user", null);
 		String s1=prefs.getString("pass", null);
 		if(s!=null && s1!=(null))
 		{
 			  Intent intent = new Intent(MainActivity.this, TweetListActivity.class);
 			  startActivity(intent);
+			  finish();
 		}
 				 
 		_loginBtn.setOnClickListener(new View.OnClickListener() {
