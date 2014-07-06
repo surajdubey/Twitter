@@ -55,7 +55,7 @@ public class AsyncFetchTweets extends AsyncTask<Void,Void, List<Tweet>> {
 	
 	 protected void onPostExecute(List<Tweet> TweetRead) {
 		 Log.d("Call From on Prefetch","Check");
-	         test.renderTweets(TweetRead);
+	         //test.renderTweets(TweetRead);
 	    }
 	
 }

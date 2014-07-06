@@ -1,16 +1,19 @@
 package org.codelearn.twitter;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.codelearn.twitter.models.Tweet;
+import org.json.JSONArray;
 
 import android.app.ListActivity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -25,50 +28,20 @@ public class TweetListActivity extends ListActivity{
 
     private ArrayAdapter tweetItemArrayAdapter;
     private List<Tweet> tweets = new ArrayList<Tweet>();
-    private List<Tweet> tweetsRead=new ArrayList<Tweet>();
-    private static final String TWEETS_CACHE_FILE = "tweet_cache.ser";
-    private static final long serialVersionUID = 1L;
+ 
+    public static String tag="codelearn";
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.activity_tweet_list);
-		/*
-		String username = getIntent().getStringExtra("user");
-		String password= getIntent().getStringExtra("pass");
-		*/
-		for ( int i = 0; i < 30; i++ ) {
-		    Tweet tweet = new Tweet();
-		    tweet.setTitle("A nice header for Tweet # " +i);
-		    tweet.setBody("Some random body text for the tweet # " +i);
-		    tweets.add(tweet);
-		}
 		
-		try
-		
-		{
-			FileInputStream fis = openFileInput(TWEETS_CACHE_FILE);
-			ObjectInputStream ois = new ObjectInputStream(fis);
-			tweetsRead = ( List<Tweet> ) ois.readObject();
-		}
-		catch(Exception e)
-		{
-			
-		}
-	
-		renderTweets(tweetsRead);
-		AsyncFetchTweets asyc=new AsyncFetchTweets(this);
-		asyc.execute();
-		
-	
+		/*tweetItemArrayAdapter = new TweetAdapter(this, tweets);
+		setListAdapter(tweetItemArrayAdapter);
+		*/	
+		new TweetSync().execute();
 		
 	}
 
-	public void renderTweets(List<Tweet> tweets)
-	{
-		tweetItemArrayAdapter = new TweetAdapter(this, tweets);
-		setListAdapter(tweetItemArrayAdapter);
-		
-	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -80,8 +53,51 @@ public class TweetListActivity extends ListActivity{
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		Intent intent = new Intent(this, TweetDetailActivity.class);
 		
-		intent.putExtra("MyClass",(Tweet) getListAdapter().getItem(position));
+		//intent.putExtra("MyClass",(Tweet) getListAdapter().getItem(position));
 		startActivity(intent);
+		
+	}
+	
+	private class TweetSync extends AsyncTask<Void, Void, Void>
+	{
+		String url="http://app-dev-challenge-endpoint.herokuapp.com/tweets";
+		JSONArray jarray;
+		@Override
+		protected Void doInBackground(Void... params) {
+			
+			try{
+			DefaultHttpClient htppclient = new DefaultHttpClient();
+			HttpGet get = new HttpGet(url);
+			HttpResponse response = htppclient.execute(get);
+			
+			Log.d(tag,"Response Received");
+			HttpEntity entity = response.getEntity();
+			Log.d(tag,"http Entity");
+			
+			if(entity!=null)
+			{
+				Log.d(tag,"Entity not null");
+				
+				String retStr  = EntityUtils.toString(entity);
+				Log.d(tag,"Response is "+retStr);
+				
+				jarray = new JSONArray(retStr);
+			}//if
+			
+			
+			}//try
+			
+			catch(Exception e)
+			{
+				Log.d("codelearn",e.getMessage());
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+		
+		}
 		
 	}
 }
