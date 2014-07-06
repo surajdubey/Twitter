@@ -10,6 +10,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.codelearn.twitter.models.Tweet;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -27,7 +28,7 @@ public class TweetListActivity extends ListActivity{
 
 
     private ArrayAdapter tweetItemArrayAdapter;
-    private List<Tweet> tweets = new ArrayList<Tweet>();
+   // private List<Tweet> tweets = new ArrayList<Tweet>();
  
     public static String tag="codelearn";
 	@Override
@@ -39,6 +40,13 @@ public class TweetListActivity extends ListActivity{
 		setListAdapter(tweetItemArrayAdapter);
 		*/	
 		new TweetSync().execute();
+		
+	}
+	
+	public void renderTweet(List<Tweet> tweets)
+	{
+		tweetItemArrayAdapter = new TweetAdapter(this, tweets);
+		setListAdapter(tweetItemArrayAdapter);
 		
 	}
 
@@ -58,12 +66,13 @@ public class TweetListActivity extends ListActivity{
 		
 	}
 	
-	private class TweetSync extends AsyncTask<Void, Void, Void>
+	private class TweetSync extends AsyncTask<Void, Void, List<Tweet>>
 	{
 		String url="http://app-dev-challenge-endpoint.herokuapp.com/tweets";
 		JSONArray jarray;
+		List<Tweet> tweets = new ArrayList<Tweet>();
 		@Override
-		protected Void doInBackground(Void... params) {
+		protected List<Tweet> doInBackground(Void... params) {
 			
 			try{
 			DefaultHttpClient htppclient = new DefaultHttpClient();
@@ -83,7 +92,15 @@ public class TweetListActivity extends ListActivity{
 				
 				jarray = new JSONArray(retStr);
 			}//if
-			
+			JSONObject jobj = new JSONObject();
+			for(int i=0;i<jarray.length();i++)
+			{
+				Tweet t = new Tweet();
+				jobj = jarray.getJSONObject(i);
+				t.setTitle(jobj.getString("title"));
+				t.setBody(jobj.getString("body"));
+				tweets.add(t);
+			}
 			
 			}//try
 			
@@ -91,12 +108,13 @@ public class TweetListActivity extends ListActivity{
 			{
 				Log.d("codelearn",e.getMessage());
 			}
-			return null;
+			return tweets;
 		}
 		
 		@Override
-		protected void onPostExecute(Void result) {
-		
+		protected void onPostExecute(List<Tweet> tweets) {
+
+			renderTweet(tweets);
 		}
 		
 	}
