@@ -8,7 +8,7 @@
     <string name="lbl_enter_username">Enter your username</string>
     <string name="lbl_pwd">Password</string>
     <string name="lbl_enter_pwd">Enter your password</string>
-    <string name="lbl_login">Login</string>
+    <string name="lbl_login">Login With Twitter</string>
     <string name="title_activity_tweet_list">TweetListActivity</string>
     <string name="no_tweet_found">No Tweet Found</string>
     <string name="title_activity_tweet_detail">TweetDetailActivity</string>
