@@ -62,7 +62,7 @@ public class TweetListActivity extends ListActivity{
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		Intent intent = new Intent(this, TweetDetailActivity.class);
-		
+	
 		//intent.putExtra("MyClass",(Tweet) getListAdapter().getItem(position));
 		startActivity(intent);
 		
@@ -72,7 +72,7 @@ public class TweetListActivity extends ListActivity{
 	{
 		String url="http://app-dev-challenge-endpoint.herokuapp.com/tweets";
 		JSONArray jarray;
-		//List<Tweet> tweets = new ArrayList<Tweet>();
+		List<Tweet> tempTweets = new ArrayList<Tweet>();
 		@Override
 		protected List<Tweet> doInBackground(Void... params) {
 			
@@ -90,9 +90,11 @@ public class TweetListActivity extends ListActivity{
 				Log.d(tag,"Entity not null");
 				
 				String retStr  = EntityUtils.toString(entity);
-				Log.d(tag,"Response is "+retStr);
+				//Log.d(tag,"Response is "+retStr);
 				
 				jarray = new JSONArray(retStr);
+				
+				Log.d(tag, "New array length = "+jarray.length());
 			}//if
 			JSONObject jobj = new JSONObject();
 			for(int i=0;i<jarray.length();i++)
@@ -101,16 +103,20 @@ public class TweetListActivity extends ListActivity{
 				jobj = jarray.getJSONObject(i);
 				t.setTitle(jobj.getString("title"));
 				t.setBody(jobj.getString("body"));
-				tweets.add(t);
+				tempTweets.add(t);
 			}
 			
+			tempTweets.addAll(tweets);
+			tweets = tempTweets;
+			
+			Log.d(tag, "length = " + tempTweets.size());
 			}//try
 			
 			catch(Exception e)
 			{
 				Log.d("codelearn",e.getMessage());
 			}
-			return tweets;
+			return tempTweets;
 		}
 		
 		@Override
