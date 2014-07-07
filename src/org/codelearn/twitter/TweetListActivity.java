@@ -42,7 +42,7 @@ public class TweetListActivity extends ListActivity{
 		setListAdapter(tweetItemArrayAdapter);
 		*/	
 		new TweetSync().execute();
-		
+		renderTweet(tweets);
 	}
 	
 	public void renderTweet(List<Tweet> tweets)
