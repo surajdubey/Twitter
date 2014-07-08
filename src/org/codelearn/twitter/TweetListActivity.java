@@ -94,6 +94,12 @@ public class TweetListActivity extends ListActivity{
 			new TweetList().execute("");
 			Log.d(tag, "Refresh Item!!");
 			return true;
+			
+		case R.id.composeTweet:
+			
+			Intent intent = new Intent(this , ComposeTweetActivity.class);
+			startActivity(intent);
+			return true;
 		
 		default:
 			return super.onOptionsItemSelected(item);

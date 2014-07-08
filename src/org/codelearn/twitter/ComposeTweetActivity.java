@@ -1,27 +1,45 @@
 package org.codelearn.twitter;
 
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.os.Build;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
 
-public class ComposeTweetActivity extends ActionBarActivity {
-
+public class ComposeTweetActivity extends Activity {
+	
+	Twitter twitter;
+	String tweetToPost;
+	public String tag = "codelearn";
+	Context context = this;
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_compose_tweet);
-
-		if (savedInstanceState == null) {
-			getSupportFragmentManager().beginTransaction()
-					.add(R.id.container, new PlaceholderFragment()).commit();
-		}
+		
+		final EditText fld_compose = (EditText) findViewById(R.id.fld_compose);
+		Button btn_submit = (Button) findViewById(R.id.btn_submit);
+		
+		btn_submit.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				tweetToPost = fld_compose.getText().toString();
+				new TweetAsync().execute();
+			}
+		});
+		
 	}
 
 	@Override
@@ -43,22 +61,40 @@ public class ComposeTweetActivity extends ActionBarActivity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-
-	/**
-	 * A placeholder fragment containing a simple view.
-	 */
-	public static class PlaceholderFragment extends Fragment {
-
-		public PlaceholderFragment() {
-		}
-
+	
+	private class TweetAsync extends AsyncTask<Void, Void, Void>
+	{
+		
+		ProgressDialog pd;
+		
+		
 		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_compose_tweet,
-					container, false);
-			return rootView;
+		protected void onPreExecute() {
+			pd = ProgressDialog.show(context, "Please Wait", "Posting Tweet!!" , true);
 		}
+		@Override
+		protected Void doInBackground(Void... params) {
+			
+			twitter = TwitterUtil.getInstance().getTwitter();
+			try {
+				twitter4j.Status response = twitter.updateStatus(tweetToPost);
+				Log.d(tag, "Status : "+response.getText());
+			} catch (TwitterException e) {
+				e.printStackTrace();
+				Log.d(tag, "Error!!");
+			}
+			
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			pd.dismiss();
+		}
+		
+		
+		
 	}
+
 
 }
