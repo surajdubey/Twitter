@@ -3,17 +3,19 @@ package org.codelearn.twitter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.codelearn.twitter.models.Tweet;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
+import twitter4j.Paging;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.auth.AccessToken;
+import twitter4j.auth.RequestToken;
 import android.app.ListActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,16 +35,25 @@ public class TweetListActivity extends ListActivity{
     public List<Tweet> tweets = new ArrayList<Tweet>();
  
     public static String tag="codelearn";
-	@Override
+	Twitter twitter;
+    
+	
+	
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.activity_tweet_list);
 		
-		/*tweetItemArrayAdapter = new TweetAdapter(this, tweets);
-		setListAdapter(tweetItemArrayAdapter);
-		*/	
-		new TweetSync().execute();
-		renderTweet(tweets);
+		/**
+		 * Handle OAuth Callback
+		 */
+		Uri uri = getIntent().getData();
+		if (uri != null && uri.toString().startsWith(TwitterConstants.CALLBACK_URL)) {
+			String verifier = uri.getQueryParameter(TwitterConstants.IEXTRA_OAUTH_VERIFIER);
+			new TweetList().execute(verifier);
+        }
+
+
 	}
 	
 	public void renderTweet(List<Tweet> tweets)
@@ -68,64 +79,6 @@ public class TweetListActivity extends ListActivity{
 		
 	}
 	
-	private class TweetSync extends AsyncTask<Void, Void, List<Tweet>>
-	{
-		String url="http://app-dev-challenge-endpoint.herokuapp.com/tweets";
-		JSONArray jarray;
-		List<Tweet> tempTweets = new ArrayList<Tweet>();
-		@Override
-		protected List<Tweet> doInBackground(Void... params) {
-			
-			try{
-			DefaultHttpClient htppclient = new DefaultHttpClient();
-			HttpGet get = new HttpGet(url);
-			HttpResponse response = htppclient.execute(get);
-			
-			Log.d(tag,"Response Received");
-			HttpEntity entity = response.getEntity();
-			Log.d(tag,"http Entity");
-			
-			if(entity!=null)
-			{
-				Log.d(tag,"Entity not null");
-				
-				String retStr  = EntityUtils.toString(entity);
-				//Log.d(tag,"Response is "+retStr);
-				
-				jarray = new JSONArray(retStr);
-				
-				Log.d(tag, "New array length = "+jarray.length());
-			}//if
-			JSONObject jobj = new JSONObject();
-			for(int i=0;i<jarray.length();i++)
-			{
-				Tweet t = new Tweet();
-				jobj = jarray.getJSONObject(i);
-				t.setTitle(jobj.getString("title"));
-				t.setBody(jobj.getString("body"));
-				tempTweets.add(t);
-			}
-			
-			tempTweets.addAll(tweets);
-			tweets = tempTweets;
-			
-			Log.d(tag, "length = " + tempTweets.size());
-			}//try
-			
-			catch(Exception e)
-			{
-				Log.d("codelearn",e.getMessage());
-			}
-			return tempTweets;
-		}
-		
-		@Override
-		protected void onPostExecute(List<Tweet> tweets) {
-
-			renderTweet(tweets);
-		}
-		
-	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -134,7 +87,7 @@ public class TweetListActivity extends ListActivity{
 		case R.id.refresh:
 			
 			//Toast.makeText(getApplicationContext(), "Refresh", Toast.LENGTH_SHORT).show();
-			new TweetSync().execute();
+			new TweetList().execute();
 			Log.d(tag, "Refresh Item!!");
 			return true;
 		
@@ -143,4 +96,57 @@ public class TweetListActivity extends ListActivity{
 		}
 		
 	}
-}
+	
+	private class TweetList extends AsyncTask<String, Void, Void>
+	{
+		List<twitter4j.Status> statuses;
+		@Override
+		protected Void doInBackground(String... params) {
+			try { 
+            	SharedPreferences prefs = getSharedPreferences(TwitterConstants.SHARED_PREFERENCE, MODE_PRIVATE);
+            	RequestToken requesttoken = TwitterUtil.getInstance().getRequestToken();
+            	Twitter twitter = TwitterUtil.getInstance().getTwitter();
+            	Log.d(tag, "Reached inside try Resume");
+                AccessToken accessToken = twitter.getOAuthAccessToken(requesttoken, params[0]); 
+                Log.d(tag, "Reached inside access token Resume");
+                
+                Editor e = prefs.edit();
+                e.putString(TwitterConstants.PREF_KEY_TOKEN, accessToken.getToken()); 
+                e.putString(TwitterConstants.PREF_KEY_SECRET, accessToken.getTokenSecret()); 
+                e.commit();
+                
+              
+	        } catch (TwitterException e) { 
+	               
+	                e.printStackTrace();
+	                //Log.e(tag, e.getStatusCode()+" "+e.getErrorCode());
+			}
+            
+            catch (Exception e) {
+            	Log.d(tag, "other exception");
+            	e.printStackTrace();
+            }
+
+			return null;
+		/*	Twitter twitter = TwitterFactory.getSingleton();
+			Paging paging = new Paging(1,10);
+			
+			try {
+				statuses = twitter.getUserTimeline(paging);
+				for(twitter4j.Status st: statuses)
+				{
+					Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
+				}
+			} catch (TwitterException e) {
+				Log.d(tag,e.getMessage());
+				e.printStackTrace();
+				
+			}
+			
+			return null;
+		}*/
+		
+			}
+		}
+	
+	}

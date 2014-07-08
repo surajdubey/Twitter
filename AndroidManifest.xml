@@ -24,16 +24,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             
+        </activity>
+        <activity
+            android:name="org.codelearn.twitter.TweetListActivity"
+            android:label="@string/title_activity_tweet_list" >
+            
             <intent-filter>
             	<action android:name="android.intent.action.VIEW" />
             	<category android:name="android.intent.category.DEFAULT" />
             	<category android:name="android.intent.category.BROWSABLE" />
             	<data android:scheme="oauth" android:host="t4jsample" />    
             </intent-filter>
-        </activity>
-        <activity
-            android:name="org.codelearn.twitter.TweetListActivity"
-            android:label="@string/title_activity_tweet_list" >
         </activity>
         <activity
             android:name="org.codelearn.twitter.TweetDetailActivity"
