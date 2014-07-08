@@ -35,7 +35,12 @@ public class TweetListActivity extends ListActivity{
     public List<Tweet> tweets = new ArrayList<Tweet>();
  
     public static String tag="codelearn";
-	Twitter twitter;
+	
+    Twitter twitter;
+	RequestToken requesttoken;
+	AccessToken accessToken;
+	
+	int count = 5;
     
 	
 	
@@ -56,9 +61,9 @@ public class TweetListActivity extends ListActivity{
 
 	}
 	
-	public void renderTweet(List<Tweet> tweets)
+	public void renderTweet(List<Tweet> tweetList)
 	{
-		tweetItemArrayAdapter = new TweetAdapter(this, tweets);
+		tweetItemArrayAdapter = new TweetAdapter(this, tweetList);
 		setListAdapter(tweetItemArrayAdapter);
 		
 	}
@@ -74,7 +79,6 @@ public class TweetListActivity extends ListActivity{
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		Intent intent = new Intent(this, TweetDetailActivity.class);
 	
-		//intent.putExtra("MyClass",(Tweet) getListAdapter().getItem(position));
 		startActivity(intent);
 		
 	}
@@ -87,7 +91,7 @@ public class TweetListActivity extends ListActivity{
 		case R.id.refresh:
 			
 			//Toast.makeText(getApplicationContext(), "Refresh", Toast.LENGTH_SHORT).show();
-			new TweetList().execute();
+			new TweetList().execute("");
 			Log.d(tag, "Refresh Item!!");
 			return true;
 		
@@ -100,60 +104,57 @@ public class TweetListActivity extends ListActivity{
 	private class TweetList extends AsyncTask<String, Void, Void>
 	{
 		List<twitter4j.Status> statuses;
+		List<Tweet> tweetList = new ArrayList<Tweet>();
 		@Override
 		protected Void doInBackground(String... params) {
-			try { 
-            	SharedPreferences prefs = getSharedPreferences(TwitterConstants.SHARED_PREFERENCE, MODE_PRIVATE);
-            	RequestToken requesttoken = TwitterUtil.getInstance().getRequestToken();
-            	Twitter twitter = TwitterUtil.getInstance().getTwitter();
-            	Log.d(tag, "Reached inside try Resume");
-                AccessToken accessToken = twitter.getOAuthAccessToken(requesttoken, params[0]); 
-                Log.d(tag, "Reached inside access token Resume");
-                
-                Editor e = prefs.edit();
-                e.putString(TwitterConstants.PREF_KEY_TOKEN, accessToken.getToken()); 
-                e.putString(TwitterConstants.PREF_KEY_SECRET, accessToken.getTokenSecret()); 
-                e.commit();
-                
-                Paging paging = new Paging(1,10);
+			try {
+			
+				if(params[0].equals("") == false)
+				{
+	            	SharedPreferences prefs = getSharedPreferences(TwitterConstants.SHARED_PREFERENCE, MODE_PRIVATE);
+	            	requesttoken = TwitterUtil.getInstance().getRequestToken();
+	            	twitter = TwitterUtil.getInstance().getTwitter();
+	            	Log.d(tag, "Reached inside try Resume");
+	                accessToken = twitter.getOAuthAccessToken(requesttoken, params[0]); 
+	                Log.d(tag, "Reached inside access token Resume");
+	                
+	                Editor e = prefs.edit();
+	                e.putString(TwitterConstants.PREF_KEY_TOKEN, accessToken.getToken()); 
+	                e.putString(TwitterConstants.PREF_KEY_SECRET, accessToken.getTokenSecret());
+	                
+	                e.commit();
+				}
+				
+				
+                Paging paging = new Paging(1,count);
+                count = count+5;
             	statuses = twitter.getUserTimeline(paging);
 				for(twitter4j.Status st: statuses)
 				{
 					Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
+					Tweet tweet = new Tweet();
+					tweet.setTitle(st.getUser().getScreenName()+" : "+st.getText());
+					tweetList.add(tweet);
 				}
                 
               
 	        } catch (TwitterException e) { 
-	               
 	                e.printStackTrace();
-	                //Log.e(tag, e.getStatusCode()+" "+e.getErrorCode());
 			}
             
             catch (Exception e) {
             	Log.d(tag, "other exception");
             	e.printStackTrace();
             }
-
 			return null;
-		/*	Twitter twitter = TwitterFactory.getSingleton();
-			Paging paging = new Paging(1,10);
-			
-			try {
-				statuses = twitter.getUserTimeline(paging);
-				for(twitter4j.Status st: statuses)
-				{
-					Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
-				}
-			} catch (TwitterException e) {
-				Log.d(tag,e.getMessage());
-				e.printStackTrace();
-				
 			}
-			
-			return null;
-		}*/
 		
-			}
+		@Override
+		protected void onPostExecute(Void result) {
+			renderTweet(tweetList);
 		}
+		}
+	
+
 	
 	}

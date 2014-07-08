@@ -18,7 +18,7 @@ public class TweetDetailActivity extends Activity {
 		
 		TextView u2=(TextView) findViewById(R.id.tweetBody);
 		u1.setText(value.getTitle().toString());
-		u2.setText(value.getBody().toString());
+		
 		
 	}
 

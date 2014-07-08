@@ -7,11 +7,11 @@
        android:orientation="vertical" >
 
        <ImageView
-           android:id                   ="@+id/tweetImage"
-           android:layout_width     ="100dp"
-           android:layout_height        ="100dp"
-           android:background           ="@drawable/user_profile"
-           android:layout_gravity       ="center_horizontal" />
+           android:id="@+id/tweetImage"
+           android:layout_width="100dp"
+           android:layout_height="100dp"
+           android:background="@drawable/user_profile"
+           android:layout_gravity="center_horizontal" />
 
     <LinearLayout 
         android:layout_width="fill_parent"
@@ -24,13 +24,13 @@
         android:padding="10dp" >
 
             <TextView
-                android:id              ="@+id/tweetTitle"
-                android:layout_width    ="fill_parent"
-                android:layout_height   ="wrap_content"
-                android:text            ="Header Text"
-                android:textColor       ="#181717"
-                android:textSize        ="19sp"
-                android:textStyle       ="bold" />
+                android:id="@+id/tweetTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Header Text"
+                android:textColor="#181717"
+                android:textSize="19sp"
+                android:textStyle="bold" />
             <TextView
                 android:id              ="@+id/tweetBody"
                 android:layout_width    ="fill_parent"

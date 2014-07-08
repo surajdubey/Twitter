@@ -13,5 +13,6 @@
     <string name="no_tweet_found">No Tweet Found</string>
     <string name="title_activity_tweet_detail">TweetDetailActivity</string>
     <string name="refresh">Refresh</string>
+    <string name="title_activity_compose_tweet">ComposeTweetActivity</string>
 
 </resources>
