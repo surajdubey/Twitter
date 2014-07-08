@@ -115,6 +115,13 @@ public class TweetListActivity extends ListActivity{
                 e.putString(TwitterConstants.PREF_KEY_SECRET, accessToken.getTokenSecret()); 
                 e.commit();
                 
+                Paging paging = new Paging(1,10);
+            	statuses = twitter.getUserTimeline(paging);
+				for(twitter4j.Status st: statuses)
+				{
+					Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
+				}
+                
               
 	        } catch (TwitterException e) { 
 	               
