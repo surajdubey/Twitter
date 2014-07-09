@@ -5,6 +5,7 @@ import twitter4j.conf.ConfigurationBuilder;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -26,6 +27,16 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		SharedPreferences prefs = getSharedPreferences(TwitterConstants.SHARED_PREFERENCE, MODE_PRIVATE);
+		if(!prefs.getString(TwitterConstants.PREF_KEY_TOKEN, "").equals(""))
+		{
+			Intent intent = new Intent(this , TweetListActivity.class);
+			startActivity(intent);
+			finish();
+		}
+		
+		
+		
 		_loginBtn = ( Button ) findViewById(R.id.btn_login);
 		_loginBtn.setOnClickListener(new View.OnClickListener() {
 		      @Override
@@ -60,6 +71,7 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(RequestToken requesttoken) {
 			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(requesttoken.getAuthenticationURL()));
 			startActivity(intent);
+			
 			Log.d(tag, "end of try");
 
 		}

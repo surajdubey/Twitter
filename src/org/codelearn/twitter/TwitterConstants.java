@@ -15,5 +15,7 @@ public class TwitterConstants {
 	
 	static final String PREF_KEY_SECRET = "key_acc_token_secret";
 	static final String PREF_KEY_TOKEN = "key_acc_token";
+	
+	static final String LOGGEDIN = "login";
 
 }

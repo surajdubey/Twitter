@@ -39,8 +39,11 @@ public class TweetListActivity extends ListActivity{
     Twitter twitter;
 	RequestToken requesttoken;
 	AccessToken accessToken;
+	Paging paging;
 	
 	int count = 5;
+	boolean isRefresh = false;
+	long reqid;
     
 	
 	
@@ -57,6 +60,12 @@ public class TweetListActivity extends ListActivity{
 			String verifier = uri.getQueryParameter(TwitterConstants.IEXTRA_OAUTH_VERIFIER);
 			new TweetList().execute(verifier);
         }
+		
+		else
+		{
+			isRefresh = true;
+			new TweetList().execute("");
+		}
 
 
 	}
@@ -91,6 +100,7 @@ public class TweetListActivity extends ListActivity{
 		case R.id.refresh:
 			
 			//Toast.makeText(getApplicationContext(), "Refresh", Toast.LENGTH_SHORT).show();
+			isRefresh = true;
 			new TweetList().execute("");
 			Log.d(tag, "Refresh Item!!");
 			return true;
@@ -110,14 +120,15 @@ public class TweetListActivity extends ListActivity{
 	private class TweetList extends AsyncTask<String, Void, Void>
 	{
 		List<twitter4j.Status> statuses;
+		SharedPreferences prefs;
 		List<Tweet> tweetList = new ArrayList<Tweet>();
 		@Override
 		protected Void doInBackground(String... params) {
 			try {
-			
+				prefs = getSharedPreferences(TwitterConstants.SHARED_PREFERENCE, MODE_PRIVATE);
+            	
 				if(params[0].equals("") == false)
 				{
-	            	SharedPreferences prefs = getSharedPreferences(TwitterConstants.SHARED_PREFERENCE, MODE_PRIVATE);
 	            	requesttoken = TwitterUtil.getInstance().getRequestToken();
 	            	twitter = TwitterUtil.getInstance().getTwitter();
 	            	Log.d(tag, "Reached inside try Resume");
@@ -127,18 +138,32 @@ public class TweetListActivity extends ListActivity{
 	                Editor e = prefs.edit();
 	                e.putString(TwitterConstants.PREF_KEY_TOKEN, accessToken.getToken()); 
 	                e.putString(TwitterConstants.PREF_KEY_SECRET, accessToken.getTokenSecret());
-	                
+	                e.putBoolean(TwitterConstants.LOGGEDIN, true);
 	                e.commit();
 				}
 				
+				else{
+					Log.d(tag,"Else in back");
+					String keyToken = prefs.getString(TwitterConstants.PREF_KEY_TOKEN, "");
+					String keyTokenSecret = prefs.getString(TwitterConstants.PREF_KEY_SECRET,"");
+					accessToken = new AccessToken(keyToken, keyTokenSecret);
+					TwitterUtil.getInstance().setTwitterFactory(accessToken);
+					twitter = TwitterUtil.getInstance().getTwitter();
+				}
 				
-                Paging paging = new Paging(1,count);
+				paging = new Paging(1,count);
+				
+				if(isRefresh == true)
+					paging.setMaxId(reqid);
                 count = count+5;
             	statuses = twitter.getUserTimeline(paging);
-				for(twitter4j.Status st: statuses)
+				reqid = statuses.get(0).getId();
+				Log.d(tag, String.valueOf(reqid));
+            	for(twitter4j.Status st: statuses)
 				{
-					Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
+					//Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
 					Tweet tweet = new Tweet();
+					
 					tweet.setTitle(st.getUser().getScreenName()+" : "+st.getText());
 					tweetList.add(tweet);
 				}
