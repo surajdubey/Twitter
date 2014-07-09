@@ -24,8 +24,10 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
      public View getView(int position, View convertView, ViewGroup parent){
          View row = inflater.inflate(R.layout.row_tweet, parent, false);
          TextView title = (TextView) row.findViewById(R.id.tweetTitle);
+         TextView tvBody = (TextView) row.findViewById(R.id.tweetBody);
          Tweet tweet = tweetsLocal.get(position);
          title.setText(tweet.getTitle());
+         tvBody.setText(tweet.getBody());
          return row;
      }
 	

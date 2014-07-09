@@ -66,13 +66,15 @@ public class TweetListActivity extends ListActivity{
 			isRefresh = true;
 			new TweetList().execute("");
 		}
+		
+		renderTweet();
 
 
 	}
 	
-	public void renderTweet(List<Tweet> tweetList)
+	public void renderTweet()
 	{
-		tweetItemArrayAdapter = new TweetAdapter(this, tweetList);
+		tweetItemArrayAdapter = new TweetAdapter(this, tweets);
 		setListAdapter(tweetItemArrayAdapter);
 		
 	}
@@ -125,6 +127,7 @@ public class TweetListActivity extends ListActivity{
 		@Override
 		protected Void doInBackground(String... params) {
 			try {
+				tweets = new ArrayList<Tweet>();
 				prefs = getSharedPreferences(TwitterConstants.SHARED_PREFERENCE, MODE_PRIVATE);
             	
 				if(params[0].equals("") == false)
@@ -153,9 +156,10 @@ public class TweetListActivity extends ListActivity{
 				
 				paging = new Paging(1,count);
 				
-				if(isRefresh == true)
+				/*if(isRefresh == true)
 					paging.setMaxId(reqid);
-                count = count+5;
+                */
+				count = count+5;
             	statuses = twitter.getUserTimeline(paging);
 				reqid = statuses.get(0).getId();
 				Log.d(tag, String.valueOf(reqid));
@@ -164,8 +168,9 @@ public class TweetListActivity extends ListActivity{
 					//Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
 					Tweet tweet = new Tweet();
 					
-					tweet.setTitle(st.getUser().getScreenName()+" : "+st.getText());
-					tweetList.add(tweet);
+					tweet.setTitle(st.getUser().getScreenName());
+					tweet.setBody(st.getText());
+					tweets.add(tweet);
 				}
                 
               
@@ -182,7 +187,7 @@ public class TweetListActivity extends ListActivity{
 		
 		@Override
 		protected void onPostExecute(Void result) {
-			renderTweet(tweetList);
+			renderTweet();
 		}
 		}
 	
