@@ -19,5 +19,8 @@ public class TwitterConstants {
 	static final String LOGGEDIN = "login";
 	
 	static final String TWEET_CACHE_FILE = "tweet_cache.ser";
+	
+	public static String LATEST_TWEET_ID = "latest_tweet_id";
+	public static String LAST_FETCH_TWEET = "last_tweet_id";
 
 }

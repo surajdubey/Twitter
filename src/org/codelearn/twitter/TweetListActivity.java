@@ -50,7 +50,7 @@ public class TweetListActivity extends ListActivity{
 	
 	int count = 5;
 	boolean isRefresh = false;
-	long reqid;
+	long latest_tweet_id , last_tweet_id;
     
 	FileOutputStream fos;
 	ObjectOutputStream oos;
@@ -69,6 +69,8 @@ public class TweetListActivity extends ListActivity{
 		if (uri != null && uri.toString().startsWith(TwitterConstants.CALLBACK_URL)) {
 			String verifier = uri.getQueryParameter(TwitterConstants.IEXTRA_OAUTH_VERIFIER);
 			new TweetList().execute(verifier);
+
+			renderTweet();
         }
 		
 		else
@@ -93,10 +95,11 @@ public class TweetListActivity extends ListActivity{
 				e.printStackTrace();
 			}
 			
-			//new TweetList().execute("");
+			new TweetList().execute("");
+
+			renderTweet();
 		}
 		
-		renderTweet();
 
 
 	}
@@ -152,16 +155,12 @@ public class TweetListActivity extends ListActivity{
 	{
 		List<twitter4j.Status> statuses;
 		SharedPreferences prefs;
-		List<Tweet> tweetList = new ArrayList<Tweet>();
-		
-		public TweetList() {
-			
-		}
-		
+		List<Tweet> tempTweets = new ArrayList<Tweet>();
+
 		@Override
 		protected Void doInBackground(String... params) {
 			try {
-				tweets = new ArrayList<Tweet>();
+				tempTweets = new ArrayList<Tweet>();
 				prefs = getSharedPreferences(TwitterConstants.SHARED_PREFERENCE, MODE_PRIVATE);
             	
 				if(params[0].equals("") == false)
@@ -177,6 +176,9 @@ public class TweetListActivity extends ListActivity{
 	                e.putString(TwitterConstants.PREF_KEY_SECRET, accessToken.getTokenSecret());
 	                e.putBoolean(TwitterConstants.LOGGEDIN, true);
 	                e.commit();
+
+	                paging = new Paging(1,count);
+	                
 				}
 				
 				else{
@@ -186,18 +188,42 @@ public class TweetListActivity extends ListActivity{
 					accessToken = new AccessToken(keyToken, keyTokenSecret);
 					TwitterUtil.getInstance().setTwitterFactory(accessToken);
 					twitter = TwitterUtil.getInstance().getTwitter();
+					try{
+						paging = new Paging(1,count);
+						paging.setMaxId(prefs.getLong(TwitterConstants.LATEST_TWEET_ID, 0L));
+		                
+						statuses = twitter.getUserTimeline(paging);
+						latest_tweet_id = statuses.get(0).getId();
+						
+						//save latest tweet id
+						Editor e = prefs.edit();
+						e.putLong(TwitterConstants.LATEST_TWEET_ID, latest_tweet_id);
+						e.commit();
+						
+						Log.d(tag, String.valueOf(latest_tweet_id));
+		            	for(twitter4j.Status st: statuses)
+						{
+							//Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
+							Tweet tweet = new Tweet();
+							
+							tweet.setTitle(st.getUser().getScreenName());
+							tweet.setBody(st.getText());
+							tempTweets.add(tweet);
+						}
+					}
+					catch(Exception e)
+					{
+						e.printStackTrace();
+					}
+	            	tempTweets.addAll(tweets);
+	            	tweets = tempTweets;
+	            	paging = new Paging(1,count).sinceId(prefs.getLong(TwitterConstants.LAST_FETCH_TWEET , 0L));
+					
 				}
 				
-				paging = new Paging(1,count);
-				
-				/*if(isRefresh == true)
-					paging.setMaxId(reqid);
-                */
 				count = count+5;
             	statuses = twitter.getUserTimeline(paging);
-				reqid = statuses.get(0).getId();
-				Log.d(tag, String.valueOf(reqid));
-            	for(twitter4j.Status st: statuses)
+				for(twitter4j.Status st: statuses)
 				{
 					//Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
 					Tweet tweet = new Tweet();
@@ -205,8 +231,16 @@ public class TweetListActivity extends ListActivity{
 					tweet.setTitle(st.getUser().getScreenName());
 					tweet.setBody(st.getText());
 					tweets.add(tweet);
+					
+					last_tweet_id = st.getId();
 				}
             	
+				Editor e = prefs.edit();
+				
+				//e.putLong(TwitterConstants.LAST_FETCH_TWEET, statuses.get(statuses.size()-1).getId());
+				e.putLong(TwitterConstants.LAST_FETCH_TWEET, last_tweet_id);
+				e.commit();
+				
             	Log.d(tag, "Writing to file");
             	
             	fos = openFileOutput(TwitterConstants.TWEET_CACHE_FILE, MODE_PRIVATE);
