@@ -1,5 +1,12 @@
 package org.codelearn.twitter;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +52,10 @@ public class TweetListActivity extends ListActivity{
 	boolean isRefresh = false;
 	long reqid;
     
-	
+	FileOutputStream fos;
+	ObjectOutputStream oos;
+	FileInputStream fis;
+	ObjectInputStream ois;
 	
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +74,26 @@ public class TweetListActivity extends ListActivity{
 		else
 		{
 			isRefresh = true;
-			new TweetList().execute("");
+			
+			try {
+				fis = openFileInput(TwitterConstants.TWEET_CACHE_FILE);
+				ois = new ObjectInputStream(fis);
+				tweets = (List<Tweet>) ois.readObject();
+				
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (StreamCorruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			//new TweetList().execute("");
 		}
 		
 		renderTweet();
@@ -124,6 +153,11 @@ public class TweetListActivity extends ListActivity{
 		List<twitter4j.Status> statuses;
 		SharedPreferences prefs;
 		List<Tweet> tweetList = new ArrayList<Tweet>();
+		
+		public TweetList() {
+			
+		}
+		
 		@Override
 		protected Void doInBackground(String... params) {
 			try {
@@ -172,6 +206,15 @@ public class TweetListActivity extends ListActivity{
 					tweet.setBody(st.getText());
 					tweets.add(tweet);
 				}
+            	
+            	Log.d(tag, "Writing to file");
+            	
+            	fos = openFileOutput(TwitterConstants.TWEET_CACHE_FILE, MODE_PRIVATE);
+            	oos = new ObjectOutputStream(fos);
+            	oos.writeObject(tweets);
+            	Log.d(tag, "Written to file success");
+            	oos.close();
+            	fos.close();
                 
               
 	        } catch (TwitterException e) { 
