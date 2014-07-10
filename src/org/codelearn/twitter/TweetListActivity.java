@@ -1,12 +1,9 @@
 package org.codelearn.twitter;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +12,6 @@ import org.codelearn.twitter.models.Tweet;
 import twitter4j.Paging;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 import android.app.ListActivity;
@@ -31,7 +27,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 
 public class TweetListActivity extends ListActivity{
@@ -70,36 +65,24 @@ public class TweetListActivity extends ListActivity{
 		Uri uri = getIntent().getData();
 		if (uri != null && uri.toString().startsWith(TwitterConstants.CALLBACK_URL)) {
 			String verifier = uri.getQueryParameter(TwitterConstants.IEXTRA_OAUTH_VERIFIER);
+			renderTweet();
 			new TweetList().execute(verifier);
 
-			renderTweet();
         }
 		
 		else
 		{
-			isRefresh = true;
-			
 			try {
 				fis = openFileInput(TwitterConstants.TWEET_CACHE_FILE);
 				ois = new ObjectInputStream(fis);
 				tweets = (List<Tweet>) ois.readObject();
-				
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (StreamCorruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
+			
+				renderTweet();
+				new TweetList().execute("");
+
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-			new TweetList().execute("");
-
-			renderTweet();
 		}
 		
 
@@ -135,8 +118,6 @@ public class TweetListActivity extends ListActivity{
 		{
 		case R.id.refresh:
 			
-			//Toast.makeText(getApplicationContext(), "Refresh", Toast.LENGTH_SHORT).show();
-			isRefresh = true;
 			new TweetList().execute("");
 			Log.d(tag, "Refresh Item!!");
 			return true;
@@ -190,19 +171,18 @@ public class TweetListActivity extends ListActivity{
 	                
 					for(twitter4j.Status st: statuses)
 					{
-						//Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
 						Tweet tweet = new Tweet();
 						
 						tweet.setTitle(st.getUser().getScreenName());
 						tweet.setBody(st.getText());
 						tweets.add(tweet);
-						
-						//last_tweet_id = st.getId();
+
 					}
 	            	
 				}
 				
 				else{
+					
 					Log.d(tag,"Else in back");
 					String keyToken = prefs.getString(TwitterConstants.PREF_KEY_TOKEN, "");
 					String keyTokenSecret = prefs.getString(TwitterConstants.PREF_KEY_SECRET,"");
@@ -224,7 +204,6 @@ public class TweetListActivity extends ListActivity{
 						Log.d(tag, String.valueOf(latest_tweet_id));
 		            	for(twitter4j.Status st: statuses)
 						{
-							//Log.d(tag, st.getUser().getScreenName()+" : "+st.getText());
 							Tweet tweet = new Tweet();
 							
 							tweet.setTitle(st.getUser().getScreenName());
@@ -238,26 +217,18 @@ public class TweetListActivity extends ListActivity{
 					}
 	            	tempTweets.addAll(tweets);
 	            	tweets = tempTweets;
-	            	//paging = new Paging(1,count).sinceId(prefs.getLong(TwitterConstants.LAST_FETCH_TWEET , 0L));
-					
+	            	
 				}
 				
-				//count = count+5;
-            	
-				/*Editor e = prefs.edit();
-				
-				//e.putLong(TwitterConstants.LAST_FETCH_TWEET, statuses.get(statuses.size()-1).getId());
-				e.putLong(TwitterConstants.LAST_FETCH_TWEET, last_tweet_id);
-				e.commit();
-				*/
-            	Log.d(tag, "Writing to file");
+				Log.d(tag, "Writing to file");
             	
             	fos = openFileOutput(TwitterConstants.TWEET_CACHE_FILE, MODE_PRIVATE);
             	oos = new ObjectOutputStream(fos);
             	oos.writeObject(tweets);
             	Log.d(tag, "Written to file success");
+            	oos.reset();
             	oos.close();
-            	fos.close();
+            	
                 
               
 	        } catch (TwitterException e) { 
