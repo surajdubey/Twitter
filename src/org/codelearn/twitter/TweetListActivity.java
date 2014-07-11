@@ -31,8 +31,6 @@ import android.widget.ListView;
 
 public class TweetListActivity extends ListActivity{
 
-
-
     private ArrayAdapter tweetItemArrayAdapter;
     public List<Tweet> tweets = new ArrayList<Tweet>();
  
@@ -59,14 +57,20 @@ public class TweetListActivity extends ListActivity{
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.activity_tweet_list);
 		
+		Log.d(tag, "Entered");
+		tweetItemArrayAdapter = new TweetAdapter(this, tweets);
+		setListAdapter(tweetItemArrayAdapter);
+		Log.d(tag, "Exit");
+		
 		/**
 		 * Handle OAuth Callback
 		 */
 		Uri uri = getIntent().getData();
 		if (uri != null && uri.toString().startsWith(TwitterConstants.CALLBACK_URL)) {
 			String verifier = uri.getQueryParameter(TwitterConstants.IEXTRA_OAUTH_VERIFIER);
-			renderTweet();
+
 			new TweetList().execute(verifier);
+			//renderTweet();
 
         }
 		
@@ -77,8 +81,9 @@ public class TweetListActivity extends ListActivity{
 				ois = new ObjectInputStream(fis);
 				tweets = (List<Tweet>) ois.readObject();
 			
-				renderTweet();
 				new TweetList().execute("");
+				//renderTweet();
+
 
 			} catch (Exception e) {
 				e.printStackTrace();
